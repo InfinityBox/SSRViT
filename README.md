@@ -25,7 +25,7 @@ More details in requirements.txt
    - set `eval=True` and other extarct features settings in `main_stg1.py`
    - run `python main_stg1.py`
 4. train the second stage with the extracted sparse feature embeddings:
-   -`python main_stg2.py`
+   - `python main_stg2.py`
 5. validate the final results in slide-level:
    - `python main_stg2.py --eval=True`
 
