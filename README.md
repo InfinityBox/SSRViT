@@ -1,8 +1,7 @@
 # Transformer Based Weakly Supervised Learning for Whole Slide Lung Cancer Image Classification
 
 Code repository for our paper "Transformer Based Weakly Supervised Learning for Whole Slide Lung Cancer Image Classification".
-This is a Python script for our proposed framework.
-
+![overview](./upload_images/overview.png)
 ## Requirements
 - python 3.8.5
 - numpy==1.23.5
