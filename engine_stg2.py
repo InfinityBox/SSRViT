@@ -49,10 +49,13 @@ def eval_slides(model, device, test_loader, criterion, _logger):
             correct += (predicted == target).sum().item()
 
             label.extend(target.cpu().numpy())
-            p.extend(logits[:, 1].cpu().numpy())
+            p.extend(logits.cpu().numpy())
 
         acc = 100. * correct / total
-        auc = roc_auc_score(label, p)
+        if len(np.unique(label)) > 2:
+            auc = roc_auc_score(label, p, average='macro', multi_class='ovr')
+        else:
+            auc = roc_auc_score(label, p[:, 1])
         test_loss /= total
         _logger.info('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.3f}%), AUC: {:.3f}%\n'.format(
             test_loss, correct, total, acc, auc))
