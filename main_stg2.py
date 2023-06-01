@@ -34,19 +34,20 @@ parser = argparse.ArgumentParser(description='Train and test the wsi classificat
 parser.add_argument('--folds', default=5, type=int)
 parser.add_argument('--epochs', default=100, type=int)
 parser.add_argument('--max_patience', default=20, type=int)
+parser.add_argument('--num_classes', default=3, type=int)
 parser.add_argument('--device', default='cuda', help='device to use for training / testing')
 parser.add_argument('--seed', default=42, type=int)
 parser.add_argument('--eval', action='store_true', default=True, help='test process')
 parser.add_argument('--model', default='SViT', type=str, help='name of training model')
 
 parser.add_argument('--data_path',
-                    default='/run/media/ains/961737ba-6eb3-4abf-95d7-607f1e0bb1ba/An/paper/SRViT/features/',
+                    default='',
                     type=str, help='dataset path')
 parser.add_argument('--csv_path',
-                    default='/run/media/ains/961737ba-6eb3-4abf-95d7-607f1e0bb1ba/An/paper/splits/fivefold_labels/',
+                    default='',
                     type=str, help='train csv path')
 parser.add_argument('--output_dir',
-                    default='/run/media/ains/961737ba-6eb3-4abf-95d7-607f1e0bb1ba/An/paper/SRViT/stg2/',
+                    default='',
                     type=str, help='model & log save path')
 
 parser.add_argument('--focal', type=bool, default=False,  help='use focal loss or not')
@@ -108,7 +109,7 @@ def main():
 
         _logger.info(f"Start training for {args.epochs} epochs in fold {fold}")
 
-        model = SViT(dim=384, depth=3, num_heads=4, n_classes=2)
+        model = SViT(dim=384, depth=3, num_heads=4, n_classes=args.num_classes)
 
         n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
         _logger.info('number of params: %d', n_parameters)
@@ -119,7 +120,7 @@ def main():
         lr_scheduler, num_epochs = create_scheduler(args, optimizer)
 
         if args.focal:
-            criterion = focal_loss(alpha=[5, 1, 1], gamma=2, num_classes=3).to(device)
+            criterion = focal_loss(alpha=[2, 1, 1], gamma=2, num_classes=3).to(device)
         else:
             criterion = torch.nn.CrossEntropyLoss().to(device)
 

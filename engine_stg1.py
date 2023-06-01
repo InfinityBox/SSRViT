@@ -23,7 +23,7 @@ from timm.utils import accuracy, AverageMeter, dispatch_clip_grad, reduce_tensor
 
 
 def train_one_epoch(args, model, criterion, data_loader, saver, lr_scheduler, optimizer, device, epoch, loss_scaler,
-                    _logger, model_ema= None, mask=False, amp_autocast=suppress):
+                    _logger, model_ema=None, mask=False, amp_autocast=suppress):
     model.train()
 
     second_order = hasattr(optimizer, 'is_second_order') and optimizer.is_second_order

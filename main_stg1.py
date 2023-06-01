@@ -83,7 +83,7 @@ parser.set_defaults(pin_mem=True)
 parser.add_argument('--knn_eval', action='store_true', default=True,
                     help='Perform knn evaluation (slide-level) in train&test process')
 parser.add_argument('--eval', action='store_true', default=False, help='Perform evaluation only')
-parser.add_argument('--num_topk', type=int, default=256, help='number of topk for extract features')
+parser.add_argument('--num_topk', type=int, default=8, help='number of topk for extract features')
 parser.add_argument('--feat_path', default='', type=str, help='feature path')
 
 

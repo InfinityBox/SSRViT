@@ -2,10 +2,10 @@ import torch
 from torch.nn import functional as F
 
 
-class SoftTargetCrossEntropy(torch.nn.Module):
+class CrossEntropy(torch.nn.Module):
 
     def __init__(self):
-        super(SoftTargetCrossEntropy, self).__init__()
+        super(CrossEntropy, self).__init__()
 
     def forward(self, x, target, coarse_anno, reduction=True):
         N_rep = x.shape[0]
@@ -13,7 +13,7 @@ class SoftTargetCrossEntropy(torch.nn.Module):
         if not N==N_rep:
             target = target.repeat(N_rep//N,1)
         x = F.softmax(x, dim=-1)
-        x = torch.clamp(x, min=1e-7, max=1.0)
+        x = torch.clamp(x, min=1e-6, max=1.0)
         x = torch.log(x)
         loss = torch.sum(-target * x, dim=-1)
         loss = loss * coarse_anno
@@ -28,7 +28,7 @@ class CERCELoss(torch.nn.Module):
     def __init__(self, img_cls=3, tk_cls=4, RCE=True):
         super().__init__()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.base_criterion = SoftTargetCrossEntropy()
+        self.base_criterion = CrossEntropy()
         self.cls_weight = 1
         self.token_weight = 0.1
 
