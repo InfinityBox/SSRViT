@@ -29,8 +29,7 @@ class CERCELoss(torch.nn.Module):
         super().__init__()
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.base_criterion = CrossEntropy()
-        self.cls_weight = 1
-        self.token_weight = 0.1
+        self.token_weight = 0.5
 
         self.img_cls = img_cls
         self.tk_cls = tk_cls
@@ -49,8 +48,7 @@ class CERCELoss(torch.nn.Module):
 
         target_cls = F.one_hot(labels, self.img_cls).float().to(self.device)
         target_cls = lam * target_cls + (1 - lam) * target_cls.flip(0)
-        wca = lam.squeeze() * coarse_anno + (1 - lam.squeeze()) * coarse_anno.flip(0)
-        cls_loss = self.base_criterion(pred_cls, target_cls, wca, reduction=True)
+        cls_loss = self.base_criterion(pred_cls, target_cls, coarse_anno, reduction=True)
 
         token_mask_f = token_mask.reshape(-1)
         token_mask_h = F.one_hot(token_mask_f, self.tk_cls).float().to(self.device)
@@ -58,31 +56,24 @@ class CERCELoss(torch.nn.Module):
 
         token_pred = token_pred.reshape(-1, C)
 
-        ca = coarse_anno.unsqueeze(1).expand(B, N).reshape(-1)
+        weight_ce = coarse_anno.unsqueeze(1).expand(B, N).reshape(-1)
+        xentropy = self.base_criterion(token_pred, token_mask_h, weight_ce, reduction=True)
 
         if self.RCE:
-            xentropy = self.base_criterion(token_pred, token_mask_h, ca, reduction=True)
-
             pred = F.softmax(token_pred, dim=1)
             pred = torch.clamp(pred, min=1e-7, max=1.0)
             rce = (-1 * torch.sum(pred * torch.log(token_mask_h ), dim=1))
 
-            weight_ce = ca
-            weight_rce = (0.05 + 0.05 * epoch) * ca
+            weight_rce = 0.05 + 0.05 * epoch
 
             if False in torch.isfinite(xentropy):
                 xentropy = 0
 
             token_loss = torch.mean(weight_ce * xentropy + weight_rce * rce)
         else:
-            token_loss = F.kl_div(
-                    F.log_softmax(token_pred, dim=-1),
-                    token_mask_h,
-                    reduction='batchmean',
-                    log_target=False
-                )
+            token_loss = torch.mean(weight_ce * xentropy)
 
-        loss = self.cls_weight * cls_loss + self.token_weight * token_loss
+        loss = cls_loss + self.token_weight * token_loss
 
         return loss
 

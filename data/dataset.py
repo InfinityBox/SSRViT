@@ -1,13 +1,16 @@
 import os
+import sys
 import numpy as np
+from PIL import Image
 import random
 import pyvips
 import pandas as pd
 import glob
 import re
 import pickle
+import h5py
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import torch
 
@@ -205,10 +208,11 @@ class TestImageDataset(Dataset):
 
 
 class WSIDataset(Dataset):
-    def __init__(self, data_path, df, splits):
+    def __init__(self, data_path, df, h5, splits):
         self._data_path = data_path
         self.df = df
         self.sp = splits
+        self.h5 = h5
         self._pre_process()
 
     def _pre_process(self):
@@ -216,7 +220,10 @@ class WSIDataset(Dataset):
 
         self._items = []
         for slide_name in slide_names.values:
-            slide = slide_name + '.pkl'
+            if self.h5:
+                slide = slide_name + '.h5'
+            else:
+                slide = slide_name + '.pkl'
             path = os.path.join(self._data_path, slide)
             wsi_class = int(self.df[self.df[self.sp] == slide_name][self.sp + '_label'])
             item = (path, wsi_class)
@@ -229,11 +236,14 @@ class WSIDataset(Dataset):
 
     def __getitem__(self, idx):
         path, label = self._items[idx]
-        with open(path, 'rb') as f:
-            wsi = pickle.load(f)
-            feature = wsi['feature']
+        if self.h5:
+            with h5py.File(path, 'r') as hdf5_file:
+                feature = hdf5_file['features'][:]
+        else:
+            with open(path, 'rb') as f:
+                wsi = pickle.load(f)
+                feature = wsi['feature']
 
         label = torch.tensor(int(label), dtype=torch.long)
         wsi = torch.tensor(feature.reshape(-1, feature.shape[-1])).type(torch.float32)
-
         return wsi, label

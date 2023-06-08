@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
 import sys
 import os
 import argparse
@@ -34,21 +36,16 @@ parser = argparse.ArgumentParser(description='Train and test the wsi classificat
 parser.add_argument('--folds', default=5, type=int)
 parser.add_argument('--epochs', default=100, type=int)
 parser.add_argument('--max_patience', default=20, type=int)
-parser.add_argument('--num_classes', default=3, type=int)
+parser.add_argument('--img_classes', default=2, type=int)
 parser.add_argument('--device', default='cuda', help='device to use for training / testing')
 parser.add_argument('--seed', default=42, type=int)
+parser.add_argument('--h5', default=True, type=int, help='feature file is .h5 or .pkl')
 parser.add_argument('--eval', action='store_true', default=True, help='test process')
 parser.add_argument('--model', default='SViT', type=str, help='name of training model')
 
-parser.add_argument('--data_path',
-                    default='',
-                    type=str, help='dataset path')
-parser.add_argument('--csv_path',
-                    default='',
-                    type=str, help='train csv path')
-parser.add_argument('--output_dir',
-                    default='',
-                    type=str, help='model & log save path')
+parser.add_argument('--data_path', default='', type=str, help='dataset path')
+parser.add_argument('--csv_path', default='', type=str, help='train/val/test csv path')
+parser.add_argument('--output_dir', default='', type=str, help='model & log save path')
 
 parser.add_argument('--focal', type=bool, default=False,  help='use focal loss or not')
 parser.add_argument('--lr', type=float, default=2e-4, help='learning rate')
@@ -101,15 +98,15 @@ def main():
 
         data_path = os.path.join(args.data_path, str(fold))
 
-        dataset_train = WSIDataset(data_path, df, splits='train')
+        dataset_train = WSIDataset(data_path, df, h5=args.h5, splits='train')
         dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=1, num_workers=12, shuffle=True)
 
-        dataset_valid = WSIDataset(data_path, df, splits='val')
+        dataset_valid = WSIDataset(data_path, df, h5=args.h5, splits='val')
         dataloader_valid = torch.utils.data.DataLoader(dataset_valid, batch_size=1, num_workers=12, shuffle=False)
 
         _logger.info(f"Start training for {args.epochs} epochs in fold {fold}")
 
-        model = SViT(dim=384, depth=3, num_heads=4, n_classes=args.num_classes)
+        model = SViT(dim=384, depth=3, num_heads=4, n_classes=args.img_classes)
 
         n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
         _logger.info('number of params: %d', n_parameters)
@@ -120,7 +117,7 @@ def main():
         lr_scheduler, num_epochs = create_scheduler(args, optimizer)
 
         if args.focal:
-            criterion = focal_loss(alpha=[2, 1, 1], gamma=2, num_classes=3).to(device)
+            criterion = focal_loss(alpha=[1, 0.75, 0.75], gamma=2, num_classes=3).to(device)
         else:
             criterion = torch.nn.CrossEntropyLoss().to(device)
 
@@ -129,7 +126,7 @@ def main():
             Path(output_dir).mkdir(parents=True, exist_ok=True)
 
         if args.eval:
-            dataset_test = WSIDataset(data_path, df, splits='test')
+            dataset_test = WSIDataset(data_path, df, h5=args.h5, splits='test')
             dataloader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, num_workers=10, shuffle=False)
 
             eval_path = os.path.join(output_dir, 'model_best.pth.tar')
