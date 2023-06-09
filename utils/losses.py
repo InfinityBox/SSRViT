@@ -64,7 +64,7 @@ class CERCELoss(torch.nn.Module):
             pred = torch.clamp(pred, min=1e-7, max=1.0)
             rce = (-1 * torch.sum(pred * torch.log(token_mask_h ), dim=1))
 
-            weight_rce = 0.05 + 0.05 * epoch
+            weight_rce = 1 / (10 * (1 + torch.exp(torch.tensor(-epoch))))
 
             if False in torch.isfinite(xentropy):
                 xentropy = 0

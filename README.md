@@ -18,7 +18,7 @@ More details in requirements.txt
    - use [CLAM](https://github.com/mahmoodlab/CLAM) or other tools to extract tiles (patches) from WSIs
    - generate token-level masks for each patch based on coarse annotations (tissue mask if no coarse annotations are available)
    - split the dataset (slide-level or patient-level) with k-fold cross-validation
-2. train SRViT for the first stage:
+2. train SRViT for the first stage, more options for trainging and testing can be found in `main_stg1.py`:
    - `python main_stg1.py` 
    - or multi-gpu training: `torchrun --nproc_per_node=2 main_stg1.py`
 3. extract the sparse feature embeddings from the trained SRViT model:
