@@ -66,9 +66,6 @@ class CERCELoss(torch.nn.Module):
 
             weight_rce = 1 / (10 * (1 + torch.exp(torch.tensor(-epoch))))
 
-            if False in torch.isfinite(xentropy):
-                xentropy = 0
-
             token_loss = torch.mean(weight_ce * xentropy + weight_rce * rce)
         else:
             token_loss = torch.mean(weight_ce * xentropy)
