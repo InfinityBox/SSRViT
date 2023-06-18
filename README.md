@@ -29,10 +29,13 @@ More details in requirements.txt
 5. validate the final results in slide-level:
    - `python main_stg2.py --eval=True`
 
-## Citation
-If you find this code useful for your research, please cite our paper:
-```
-```
+[//]: # (## Citation)
+
+[//]: # (If you find this code useful for your research, please cite our paper:)
+
+[//]: # (```)
+
+[//]: # (```)
 
 ## Acknowledgement
 Our implementation is mainly based on the following codebases. We gratefully thank the authors for their wonderful works.
