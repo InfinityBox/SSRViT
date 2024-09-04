@@ -29,13 +29,17 @@ More details in [requirements.txt](./requirements.txt)
 5. validate the final results in slide-level:
    - `python main_stg2.py --eval=True`
 
-[//]: # (## Citation)
-
-[//]: # (If you find this code useful for your research, please cite our paper:)
-
-[//]: # (```)
-
-[//]: # (```)
+## Citation
+If you find this code useful for your research, please consider citing:
+```bash
+@article{an2024transformer,
+  title={Transformer-Based Weakly Supervised Learning for Whole Slide Lung Cancer Image Classification},
+  author={An, Jianpeng and Wang, Yong and Cai, Qing and Zhao, Gang and Dooper, Stephan and Litjens, Geert and Gao, Zhongke},
+  journal={IEEE Journal of Biomedical and Health Informatics},
+  year={2024},
+  publisher={IEEE}
+}
+```
 
 ## Acknowledgement
 Our implementation is mainly based on the following codebases. We gratefully thank the authors for their wonderful works.
